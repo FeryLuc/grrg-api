@@ -66,6 +66,15 @@ export class AuthService {
       },
     );
 
+    // Supprime les tokens excédentaires si l'user en a déjà 5
+    const tokens = await this.refreshTokenRepository.find({
+      where: { userId: user.id },
+      order: { createdAt: 'ASC' },
+    });
+    if (tokens.length >= 5) {
+      await this.refreshTokenRepository.delete(tokens[0].id);
+    }
+
     const refreshToken = randomUUID();
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
